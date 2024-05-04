@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Form Page
+{% endblock %}
+
+{% block content %}
+<br><br>
+<div class="container" style="display: flex; justify-content: center; ">
+<div class="glass" style="max-width: fit-content;">
+<form action="" method="post">
+    <h2 style="color: white; text-align: center;">Please provide the following information</h2>
+    <br><br>
+    {{ form.hidden_tag() }} <!-- To protect against CSRF attacks -->    
+
+    <h4>Business Information:</h4><br>
+    
+        <div>
+            {{ form.BusinessName.label }}
+            {{ form.BusinessName( class= 'form-control' , placeholder = 'Business Name') }}
+        </div>
+        <br>
+        <div>
+            {{ form.url.label }}
+            {{ form.url( class= 'form-control', placeholder = 'Profile URL') }}
+        </div>        
+    <br>
+    
+    {{ form.submit(class = 'btn btn-primary') }}
+</form>
+</div>
+</div>
+{% endblock %}

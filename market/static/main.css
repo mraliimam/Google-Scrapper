@@ -1,0 +1,127 @@
+body{
+    background: linear-gradient(to bottom right, #72b2e4, #92e1e2);
+    /* background-color: #3bd4cc; */
+    color: black;
+    min-height: 100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+.licorice-regular {
+    font-family: "Licorice", cursive;
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  
+.glass{
+    background: linear-gradient(135deg, rba(255,255,255,0.1)x, rgba(255,255,255,0));
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 32px;
+    padding: 20px 70px 20px;
+}
+
+.tile-input {
+    display: none;
+}
+  
+.tile-label {
+    display: inline-block;
+    padding: 0.5em 1em;
+    min-width: 100px;
+    height: 100px;
+    background-color: transparent;
+    border: 3px solid #FFF5EE;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.card-1{
+    margin-top: 5px;
+}
+
+.card{
+    margin-top: 5px;
+    width: 10rem; 
+    height: 5rem;
+    border-radius: 10px; 
+    text-align: center;
+    margin: auto;
+    background-color: aliceblue;
+    opacity: 0.7;
+}
+
+#footer{
+    padding: 5%;
+    text-align: center;
+    /* background-color: rgb(122, 255, 233); */
+    
+}
+
+.container-fluid {
+    padding: 3% 5% 0%;
+}
+
+.navbar {
+    padding:  0 0 1.8rem;
+}
+
+.navbar-brand {
+    /* font-family: 'Ubuntu'; */
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.nav-item {
+    padding: 0 18px;
+    color: rgb(207, 207, 207);
+}
+
+.tile-input:checked + .tile-label {
+    border: 2px solid #007bff;
+  }
+
+  .mainupload
+{
+width:1062px;
+height:596px;
+background:transparent;
+border-radius:10px;
+text-align:center;
+}
+.upload-container {
+            text-align: center;
+            padding: 20px;
+        }
+.upload-box label {
+            border: 4px dotted black;
+            border-radius: 20px;
+            padding: 20px;
+            display: inline-block;
+            width:400px;
+            height:200px;
+            font-size:16px;
+            font-weight:bold;
+            color:black;
+}
+
+
+.upload-button {
+            background-color: #4682B4!important;
+            color: white;
+            width:260px;
+            height:60px;
+            padding: 10px;
+            font-size:20px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            cursor: pointer;
+            margin-top:20px;
+}
+
+        .upload-button:hover {
+box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 1);
+        }
