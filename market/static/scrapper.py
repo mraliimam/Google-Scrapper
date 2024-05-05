@@ -3,16 +3,19 @@ import re
 
 def scrapperFunction(url):
     # Send a GET request to the URL
-    response = requests.get(url)
+    headers = {
+    'Accept-Language': 'en-US,en;q=0.5'  # English language preference with United States English as the primary language
+    }
+    response = requests.get(url, headers=headers)
 
-    # Check if the request was successful
+    # Check if the request was successful    
     if response.status_code == 200:        
         scrap = response.text        
         scrap = scrap.replace(',','')
         
         countPattern = "\\d{1,8} reviews"
         match = re.search(countPattern, scrap)
-        reviewsCount = int(match.group().split(' ')[0]) if match else None
+        reviewsCount = int(match.group().split(' ')[0]) if match else None    
 
         reviewPattern = f'null,\d\.\d,{reviewsCount}'
         
