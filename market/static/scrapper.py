@@ -19,7 +19,7 @@ def scrapperFunction(url):
     }
     response = requests.get(url, headers=headers)
 
-    businessName = businessFunc(url)
+    # businessName = businessFunc(url)
 
     # Check if the request was successful    
     if response.status_code == 200:        
@@ -29,6 +29,10 @@ def scrapperFunction(url):
         countPattern = "\\d{1,8} reviews"
         match = re.search(countPattern, scrap)
         reviewsCount = int(match.group().split(' ')[0]) if match else None    
+
+        pattern = r'<meta content="([^"]+)" property="og:title">'
+        matches = re.findall(pattern, response.text)
+        businessName = matches[0].split(' ·')[0] if matches else 'Not Found'
 
         # reviewPattern = f'null,\d\.\d,{reviewsCount}'
         
