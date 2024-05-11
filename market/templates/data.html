@@ -17,8 +17,7 @@
       <!-- <a class="btn upload-button" href="{{ url_for('form_page') }}">Get Started</a>         -->
       <div>
         <div class="row" style="padding: 1% 2%;">
-          <h2 class = "col-6">Businesses Names</h2>
-          <input class="form-control col-6" id="myInput" type="text" placeholder="Search..">
+          <h2 class = "col">Businesses Name: <span style="color: black;">{{ businessName }}</span></h2>          
       </div>
       <br>
       <br>
@@ -27,18 +26,18 @@
           <thead>
             <tr style="position: sticky; top: 0; background-color: #81c9e3;">              
               <th>
-                Business Name
+                Date
               </th>
               <th>
-                Action
+                Reviews Count
               </th>
             </tr>           
           </thead>
           <tbody id = "tables">
             {% for item in items %}
             <tr>              
-              <td>{{item}}</td> 
-              <td><a href="{{ url_for('data_page', name = item) }}" class="btn btn-success">View Data</a></td>             
+              <td>{{ item['Date'] }}</td> 
+              <td>{{ item['ReviewsCount'] }}</td>             
             </tr>
             {% endfor %}
           </tbody>
@@ -47,16 +46,5 @@
   </div>
 </div>
 </div>
-</div>
-
-<script>
-  $(document).ready(function(){
-    $("#myInput").on("keyup", function() {
-      var value = $(this).val().toLowerCase();
-      $("#tables tr").filter(function() {
-        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-      });
-    });
-  });
-</script>
+</div>  
 {% endblock %}

@@ -32,6 +32,6 @@ class ScrapeData(db.Model):
     URL = db.Column(db.String(), nullable = False)
     Date = db.Column(db.Date(), nullable = False, default = date.today())
     ReviewsCount = db.Column(db.Integer(), nullable = False)
-    Review = db.Column(db.Integer(), nullable = False)
+    # Review = db.Column(db.Integer(), nullable = False)
     
 db.create_all()

@@ -4,7 +4,7 @@ from wtforms.validators import DataRequired
 
 
 class BusinessForm(FlaskForm):
-    BusinessName = StringField(label = 'Business Name', validators=[DataRequired()])
+    BusinessName = StringField(label = 'Business Name')
     url = StringField(label = 'Profile URL', validators=[DataRequired()])
     ReviewsCount = IntegerField()
     Review = IntegerField()

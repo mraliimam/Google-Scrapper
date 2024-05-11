@@ -55,8 +55,16 @@ def logout_page():
 @login_required
 def home_page():
     items = ScrapeData.query.all()
+    businesses = set(result.BusinessName for result in items)
     cols = ScrapeData.__table__.columns.keys()
-    return render_template('home.html', items = items, cols = cols)
+    return render_template('home.html', items = businesses, cols = cols)
+
+@app.route('/data')
+@login_required
+def data_page():
+    businessName = request.args.get('name')
+    items = ScrapeData.query.filter_by(BusinessName = businessName)
+    return render_template('data.html', items = items, businessName = businessName)
 
 @app.route('/form', methods = ['GET', 'POST'])
 @login_required
@@ -69,9 +77,9 @@ def form_page():
     
     if request.method == 'POST':        
         
-        form.Review.data, form.ReviewsCount.data = scrapperFunction(form.url.data)        
+        form.BusinessName.data, form.ReviewsCount.data = scrapperFunction(form.url.data)        
         
-        if None in (form.Review.data, form.ReviewsCount.data):
+        if None in (form.BusinessName.data, form.ReviewsCount.data):
             flash('Data cannot be scrapped!', category='danger')
             return redirect(url_for('form_page'))
         
