@@ -23,25 +23,35 @@
       <br>
       <br>
       <div class = "table-container">
-        <table class = "table table-bordered table-hover table-transparent" style="text-align: center; color: black;">
+        <table class = "table table-bordered table-hover table-transparent table-responsive" style="text-align: center; color: black;">
           <thead>
-            <tr style="position: sticky; top: 0; background-color: #81c9e3;">              
+            <tr style="position: sticky; top: 0; background-color: #81c9e3;">                            
               <th>
                 Business Name
               </th>
               <th>
                 Action
               </th>
+              {% for date in dates %}
+              <th>
+                {{date}}
+              </th>
+              {% endfor %}
             </tr>           
           </thead>
-          <tbody id = "tables">
-            {% for item in items %}
-            <tr>              
-              <td>{{item}}</td> 
-              <td><a href="{{ url_for('data_page', name = item) }}" class="btn btn-success">View Data</a></td>             
+          <form action="" method="post">
+          <tbody id = "tables">            
+            {% for business in businesses %}
+            <tr>                            
+              <td>{{ business }}</td>
+              <td><button type="submit" name = "business" class="btn btn-success" value="{{ business }}">Get Reviews</button></td>
+              {% for review in reviewList[business] %}                
+                  <td>{{ review }}</td>               
+              {% endfor %}              
             </tr>
             {% endfor %}
           </tbody>
+        </form>
         </table>
       </div>
   </div>

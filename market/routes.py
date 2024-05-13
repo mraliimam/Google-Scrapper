@@ -50,14 +50,43 @@ def logout_page():
     return redirect(url_for('login_page'))
 
 
-@app.route('/')
-@app.route('/home')
+@app.route('/', methods = ['GET', 'POST'])
+@app.route('/home', methods = ['GET', 'POST'])
 @login_required
 def home_page():
-    items = ScrapeData.query.all()
-    businesses = set(result.BusinessName for result in items)
-    cols = ScrapeData.__table__.columns.keys()
-    return render_template('home.html', items = businesses, cols = cols)
+    from datetime import date
+    
+    if request.method == 'GET':
+        items = ScrapeData.query.all()
+        businesses = set(result.BusinessName for result in items)
+        dates = sorted(set(result.Date for result in items))
+        review_count_dict = {business: [''] * len(dates) for business in businesses}
+
+        for item in items:
+            business = item.BusinessName
+            date_index = dates.index(item.Date)
+            review_count_dict[business][date_index] = item.ReviewsCount
+        
+        cols = ScrapeData.__table__.columns.keys()
+        return render_template('home.html', items = items,businesses = businesses, dates = dates, cols = cols, reviewList = review_count_dict)
+    if request.method == 'POST':
+        business = request.form['business']        
+        url = ScrapeData.query.filter_by(BusinessName = business).first().URL
+        businessName, reviewsCount = scrapperFunction(url)
+        dataExist = ScrapeData.query.filter_by(Date = date.today(), URL = url).first()
+        if dataExist:
+            dataExist.ReviewsCount = reviewsCount
+            db.session.add(dataExist)
+            db.session.commit()
+        else:            
+            data = ScrapeData(URL = url, BusinessName = businessName, ReviewsCount = reviewsCount)
+            db.session.add(data)
+            try:
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Exception occurs: {e}!!', category='danger')
+        return redirect(url_for('home_page'))
 
 @app.route('/data')
 @login_required
@@ -69,6 +98,8 @@ def data_page():
 @app.route('/form', methods = ['GET', 'POST'])
 @login_required
 def form_page():
+
+    from datetime import date
 
     form = BusinessForm()
     
@@ -84,13 +115,19 @@ def form_page():
             return redirect(url_for('form_page'))
         
         else:
-            data = ScrapeData(**form_to_dict(form))
-            db.session.add(data)
-            try:
+            dataExist = ScrapeData.query.filter_by(Date = date.today(), URL = form.url.data).first()
+            if dataExist:
+                dataExist.ReviewsCount = form.ReviewsCount.data
+                db.session.add(dataExist)
                 db.session.commit()
-                flash('Data is added Successfuly!!', category='success')
-                return redirect(url_for('home_page'))
-            except Exception as e:
-                db.session.rollback()
-                flash(f'Exception occurs: {e}!!', category='danger')
-                return redirect(url_for('form_page'))
+            else:
+                data = ScrapeData(**form_to_dict(form))
+                db.session.add(data)
+                try:
+                    db.session.commit()
+                    flash('Data is added Successfuly!!', category='success')
+                    return redirect(url_for('home_page'))
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f'Exception occurs: {e}!!', category='danger')
+                    return redirect(url_for('form_page'))
