@@ -6,7 +6,7 @@ from flask_login import logout_user, current_user, login_required
 from flask_login import login_user
 from functools import wraps
 from market.static.scrapper import *
-
+import json
 
 def auth(form):
     user = User.query.filter_by(username = form.username.data).first()
@@ -55,6 +55,7 @@ def logout_page():
 @login_required
 def home_page():
     from datetime import date
+    import datetime
     
     if request.method == 'GET':
         items = ScrapeData.query.all()
@@ -68,25 +69,61 @@ def home_page():
             review_count_dict[business][date_index] = item.ReviewsCount
         
         cols = ScrapeData.__table__.columns.keys()
-        return render_template('home.html', items = items,businesses = businesses, dates = dates, cols = cols, reviewList = review_count_dict)
+        businesses_reviews_dates = {
+        business: zip(review_count_dict[business], dates) for business in businesses
+    }
+        return render_template('home.html', items = items,businesses = businesses, dates = dates, cols = cols, reviewList = review_count_dict, businesses_reviews_dates = businesses_reviews_dates)
     if request.method == 'POST':
-        business = request.form['business']        
-        url = ScrapeData.query.filter_by(BusinessName = business).first().URL
-        businessName, reviewsCount = scrapperFunction(url)
-        dataExist = ScrapeData.query.filter_by(Date = date.today(), URL = url).first()
-        if dataExist:
-            dataExist.ReviewsCount = reviewsCount
-            db.session.add(dataExist)
-            db.session.commit()
-        else:            
-            data = ScrapeData(URL = url, BusinessName = businessName, ReviewsCount = reviewsCount)
-            db.session.add(data)
-            try:
+        # return redirect(url_for('home_page'))
+        action_type = request.form['actionType']
+        changes = json.loads(request.form['changes']) if action_type in ('editDates','editReviews') else None
+        
+        if action_type == 'getBusiness':
+            business = request.form['business']        
+            url = ScrapeData.query.filter_by(BusinessName = business).first().URL
+            businessName, reviewsCount = scrapperFunction(url)
+            dataExist = ScrapeData.query.filter_by(Date = date.today(), URL = url).first()
+            if dataExist:
+                dataExist.ReviewsCount = reviewsCount
+                db.session.add(dataExist)
                 db.session.commit()
-            except Exception as e:
-                db.session.rollback()
-                flash(f'Exception occurs: {e}!!', category='danger')
-        return redirect(url_for('home_page'))
+            else:            
+                data = ScrapeData(URL = url, BusinessName = businessName, ReviewsCount = reviewsCount)
+                db.session.add(data)
+                try:
+                    db.session.commit()
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f'Exception occurs: {e}!!', category='danger')
+            return redirect(url_for('home_page'))
+        elif action_type == 'editDates':
+            for original_date, new_date in changes.items():
+                if original_date != new_date:
+                    items = ScrapeData.query.filter_by(Date=original_date).all()
+                    for item in items:
+                        dateFormat = new_date.split('-')
+                        item.Date = datetime.date(int(dateFormat[2]), int(dateFormat[0]), int(dateFormat[1]))
+                        db.session.add(item)
+            db.session.commit()
+            return redirect(url_for('home_page'))
+        elif action_type == 'editReviews':
+            for business, dates_reviews in changes.items():
+                for dateItem, review in dates_reviews.items():
+                    data_exist = ScrapeData.query.filter_by(Date=dateItem, BusinessName=business).first()
+                    if data_exist:
+                        data_exist.ReviewsCount = review
+                        db.session.add(data_exist)
+                    elif review != '':
+                        scrapeData = ScrapeData.query.filter_by(BusinessName=business).first()
+                        if scrapeData:
+                            dateFormat = dateItem.split('-')
+                            newScrape = ScrapeData(URL = scrapeData.URL, BusinessName = business, Date = datetime.date(int(dateFormat[0]), int(dateFormat[1]), int(dateFormat[2])), ReviewsCount = review)
+                            db.session.add(newScrape)
+            db.session.commit()
+            return redirect(url_for('home_page'))
+        else:
+            flash('Invalid action type', category='danger')
+            return redirect(url_for('home_page'))
 
 @app.route('/data')
 @login_required

@@ -15,12 +15,25 @@
 <div style="color:white; background-color:transparent; margin-top: 0%;">
   <div>            
       <!-- <a class="btn upload-button" href="{{ url_for('form_page') }}">Get Started</a>         -->
+      <form name="reviewForm" method="post">
+        <input type="hidden" id="actionType" name="actionType" value="">
       <div>
         <div class="row" style="padding: 1% 2%;">
           <h2 class = "col-6">Businesses Names</h2>
           <input class="form-control col-6" id="myInput" type="text" placeholder="Search..">
       </div>
       <br>
+      <div class="row">
+        <div class="col" id = "editDates">
+        <button class="btn btn-warning" type="button" onclick="editDates()">Edit Dates</button>
+        </div>
+        <div class="col" id = "editReviews">
+          <button class="btn btn-warning" type="button" onclick="editReviews()">Edit Reviews</button>
+        </div>
+        <div class="col" id = "save" style="display: none;" onclick="saveReviews()">
+          <button class="btn btn-success">Save</button>
+        </div>
+      </div>
       <br>
       <div class = "table-container">
         <table class = "table table-bordered table-hover table-transparent table-responsive" style="text-align: center; color: black;">
@@ -33,28 +46,27 @@
                 Action
               </th>
               {% for date in dates %}
-              <th>
-                {{date}}
+              <th data-original-date="{{ date }}">
+                {{ date.strftime('%m-%d-%Y') }}
               </th>
               {% endfor %}
             </tr>           
-          </thead>
-          <form action="" method="post">
+          </thead>          
           <tbody id = "tables">            
-            {% for business in businesses %}
+            {% for business, reviews_dates in businesses_reviews_dates.items() %}
             <tr>                            
               <td>{{ business }}</td>
-              <td><button type="submit" name = "business" class="btn btn-success" value="{{ business }}">Get Reviews</button></td>
-              {% for review in reviewList[business] %}                
-                  <td>{{ review }}</td>               
+              <td><button type="submit" name = "business" class="btn btn-success" onclick="document.getElementById('actionType').value = 'getBusiness';" value="{{ business }}">Get Reviews</button></td>
+              {% for review, date in reviews_dates %}                
+                <td data-business="{{ business }}" data-date="{{ date }}">{{ review }}</td>
               {% endfor %}              
             </tr>
             {% endfor %}
           </tbody>
-        </form>
         </table>
       </div>
   </div>
+  </form>
 </div>
 </div>
 </div>
@@ -68,5 +80,111 @@
       });
     });
   });
+</script>
+<script>
+function editDates() {
+  // Select all date columns in the table
+  var dateColumns = document.querySelectorAll('th[data-original-date]');
+  dateColumns.forEach(function(column) {
+    var originalDate = column.getAttribute('data-original-date');
+    var dateValue = column.textContent.trim();
+    column.innerHTML = '<input type="text" class="form-control date-edit" value="' + dateValue + '" data-original-date="' + originalDate + '">';
+    column.style.backgroundColor = '#f0f0f0'; // Highlight editable columns
+  });
+
+  // Toggle the display of the save button
+  var saveButton = document.getElementById('save');
+  if (saveButton.style.display === 'none') {
+    saveButton.style.display = 'block';
+  }
+
+  // Hide the editReview div
+  var editReviewDiv = document.getElementById('editReviews');
+  if (editReviewDiv) {
+    editReviewDiv.style.display = 'none';
+  }
+  // Hide the editDates div
+  var editDatesDiv = document.getElementById('editDates');
+  if (editDatesDiv) {
+    editDatesDiv.style.display = 'none';
+  }
+  document.getElementById('actionType').value = 'editDates';
+
+}
+
+function editReviews() {
+  var reviewCells = document.querySelectorAll('td[data-business][data-date]');
+     reviewCells.forEach(function(cell) {
+       var reviewValue = cell.textContent.trim();
+       var business = cell.getAttribute('data-business');
+       var date = cell.getAttribute('data-date');
+       console.log("Business:", business, "Date:", date, "Review:", reviewValue);
+       cell.innerHTML = '<input type="text" class="form-control review-edit" value="' + reviewValue + '" data-business="' + business + '" data-date="' + date + '">';
+       cell.style.backgroundColor = '#f0f0f0';
+     });
+
+     var editDatesDiv = document.getElementById('editDates');
+     if (editDatesDiv) {
+       editDatesDiv.style.display = 'none';
+     }
+
+  // Toggle the display of the save button
+  var saveButton = document.getElementById('save');
+  if (saveButton.style.display === 'none') {
+    saveButton.style.display = 'block';
+  }
+
+  // Hide the editDates div
+  var editDatesDiv = document.getElementById('editDates');
+  if (editDatesDiv) {
+    editDatesDiv.style.display = 'none';
+  }
+  // Hide the editReview div
+  var editReviewDiv = document.getElementById('editReviews');
+  if (editReviewDiv) {
+    editReviewDiv.style.display = 'none';
+  }
+  document.getElementById('actionType').value = 'editReviews';
+
+}
+</script>
+<script>
+function saveReviews() {
+  var actionType = document.getElementById('actionType').value;
+  var inputs;
+  var changes = {};
+  var form = document.forms['reviewForm'];
+
+  if (actionType === 'editReviews') {
+    inputs = document.querySelectorAll('.review-edit');
+    inputs.forEach(function(input) {
+      var business = input.getAttribute('data-business');
+      var date = input.getAttribute('data-date');
+      var review = input.value;
+      if (!changes[business]) {
+        changes[business] = {};
+      }
+      changes[business][date] = review;
+    });
+  } else if (actionType === 'editDates') {
+    inputs = document.querySelectorAll('.date-edit');
+    inputs.forEach(function(input) {
+      var originalDate = input.getAttribute('data-original-date');
+      var newDate = input.value;
+      changes[originalDate] = newDate;
+    });
+  }
+
+  // Append changes to the form
+  var changesInput = document.createElement('input');
+  changesInput.type = 'hidden';
+  changesInput.name = 'changes';
+  changesInput.value = JSON.stringify(changes);
+  form.appendChild(changesInput);
+
+  console.log("Changes data being sent:", JSON.stringify(changes));
+  // Automatically submit the form
+  form.submit();
+}
 </script>
 {% endblock %}
