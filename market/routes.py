@@ -96,6 +96,32 @@ def home_page():
                     db.session.rollback()
                     flash(f'Exception occurs: {e}!!', category='danger')
             return redirect(url_for('home_page'))
+        elif action_type == 'delBusiness':
+            business = request.form['business']        
+            bs = ScrapeData.query.filter_by(BusinessName = business).all()
+            for b in bs:
+                db.session.delete(b)
+            try:
+                db.session.commit()
+                flash(f'Buusiness Deleted Successfully!', category = 'success')
+            except Exception as e:
+                db.session.rollback()
+                print(e)
+                flash(f'Error Occurred while deleting Business', category = 'success')
+            return redirect(url_for('home_page'))
+        elif action_type == 'delDate':
+            date = request.form['date']
+            bs = ScrapeData.query.filter_by(Date = date).all()
+            for bus in bs:
+                db.session.delete(bus)
+            try:
+                db.session.commit()
+                flash(f'Buusiness Deleted Successfully!', category = 'success')
+            except Exception as e:
+                db.session.rollback()
+                print(e)
+                flash(f'Error Occurred while deleting Business', category = 'success')
+            return redirect(url_for('home_page'))
         elif action_type == 'editDates':
             for original_date, new_date in changes.items():
                 if original_date != new_date:

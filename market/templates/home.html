@@ -46,8 +46,16 @@
                 Action
               </th>
               {% for date in dates %}
-              <th data-original-date="{{ date }}">
-                {{ date.strftime('%m-%d-%Y') }}
+              <th>      
+                <div class="row">
+                  <div class="col" data-original-date="{{ date }}">
+                    {{ date.strftime('%m-%d-%Y') }}
+                  </div>
+                  <div class="col delDate" style="display: none;">
+                    <button class="btn btn-danger" type="submit" name="date" onclick="document.getElementById('actionType').value = 'delDate';" value="{{ date }}">Delete</button>
+                  </div>
+                </div>          
+                
               </th>
               {% endfor %}
             </tr>           
@@ -56,7 +64,14 @@
             {% for business, reviews_dates in businesses_reviews_dates.items() %}
             <tr>                            
               <td>{{ business }}</td>
-              <td><button type="submit" name = "business" class="btn btn-success" onclick="document.getElementById('actionType').value = 'getBusiness';" value="{{ business }}">Get Reviews</button></td>
+              <td>
+                <div class="row">
+                  <div class="col">
+                    <button type="submit" name = "business" class="btn btn-success" onclick="document.getElementById('actionType').value = 'getBusiness';" value="{{ business }}">Get Reviews</button>
+                  </div>
+                  <div class="col"><button type="submit" name = "business" class="btn btn-danger" onclick="document.getElementById('actionType').value = 'delBusiness';" value="{{ business }}">Delete</button></div>
+                </div>
+              </td>
               {% for review, date in reviews_dates %}                
                 <td data-business="{{ business }}" data-date="{{ date }}">{{ review }}</td>
               {% endfor %}              
@@ -84,7 +99,7 @@
 <script>
 function editDates() {
   // Select all date columns in the table
-  var dateColumns = document.querySelectorAll('th[data-original-date]');
+  var dateColumns = document.querySelectorAll('div[data-original-date]');
   dateColumns.forEach(function(column) {
     var originalDate = column.getAttribute('data-original-date');
     var dateValue = column.textContent.trim();
@@ -109,6 +124,12 @@ function editDates() {
     editDatesDiv.style.display = 'none';
   }
   document.getElementById('actionType').value = 'editDates';
+
+  // Show all divs with class name delDate
+  var delDateDivs = document.querySelectorAll('.delDate');
+  delDateDivs.forEach(function(delDateDiv) {
+    delDateDiv.style.display = 'block';
+  });
 
 }
 
