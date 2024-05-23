@@ -70,13 +70,14 @@ def home_page():
         
         cols = ScrapeData.__table__.columns.keys()
         businesses_reviews_dates = {
-        business: zip(review_count_dict[business], dates) for business in businesses
-    }
+        (business,ScrapeData.query.filter_by(BusinessName = business).first().URL, ScrapeData.query.filter_by(BusinessName = business).first().NickName): zip(review_count_dict[business], dates) for business in businesses
+        }
+        
         return render_template('home.html', items = items,businesses = businesses, dates = dates, cols = cols, reviewList = review_count_dict, businesses_reviews_dates = businesses_reviews_dates)
     if request.method == 'POST':
         # return redirect(url_for('home_page'))
         action_type = request.form['actionType']
-        changes = json.loads(request.form['changes']) if action_type in ('editDates','editReviews') else None
+        changes = json.loads(request.form['changes']) if action_type in ('editDates','editReviews', 'editNickName') else None
         
         if action_type == 'getBusiness':
             business = request.form['business']        
@@ -145,6 +146,13 @@ def home_page():
                             dateFormat = dateItem.split('-')
                             newScrape = ScrapeData(URL = scrapeData.URL, BusinessName = business, Date = datetime.date(int(dateFormat[0]), int(dateFormat[1]), int(dateFormat[2])), ReviewsCount = review)
                             db.session.add(newScrape)
+            db.session.commit()
+            return redirect(url_for('home_page'))
+        elif action_type == 'editNickName':
+            for business,nickName in changes.items():
+                for data in ScrapeData.query.filter_by(BusinessName = business):
+                    data.NickName = nickName if nickName else ''
+                    db.session.add(data)
             db.session.commit()
             return redirect(url_for('home_page'))
         else:

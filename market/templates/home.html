@@ -24,6 +24,9 @@
       </div>
       <br>
       <div class="row">
+        <div class="col" id = "editNickNames">
+          <button class="btn btn-warning" type="button" onclick="editNickNames()">Edit NickNames</button>
+          </div>
         <div class="col" id = "editDates">
         <button class="btn btn-warning" type="button" onclick="editDates()">Edit Dates</button>
         </div>
@@ -41,6 +44,9 @@
             <tr style="position: sticky; top: 0; background-color: #81c9e3;">                            
               <th>
                 Business Name
+              </th>
+              <th>
+                Nick Name
               </th>
               <th>
                 Action
@@ -63,7 +69,8 @@
           <tbody id = "tables">            
             {% for business, reviews_dates in businesses_reviews_dates.items() %}
             <tr>                            
-              <td>{{ business }}</td>
+              <td><a href="{{ business[1] }}" target="_blank">{{ business[0] }}</a></td>
+              <td>{{ business[2] }}</td>
               <td>
                 <div class="row">
                   <div class="col">
@@ -73,7 +80,7 @@
                 </div>
               </td>
               {% for review, date in reviews_dates %}                
-                <td data-business="{{ business }}" data-date="{{ date }}">{{ review }}</td>
+                <td data-business="{{ business[0] }}" data-date="{{ date }}">{{ review }}</td>
               {% endfor %}              
             </tr>
             {% endfor %}
@@ -125,6 +132,11 @@ function editDates() {
   }
   document.getElementById('actionType').value = 'editDates';
 
+  var editNickName = document.getElementById('editNickNames');
+  if(editNickName){
+    editNickName.style.display = 'none';
+  }
+
   // Show all divs with class name delDate
   var delDateDivs = document.querySelectorAll('.delDate');
   delDateDivs.forEach(function(delDateDiv) {
@@ -165,8 +177,47 @@ function editReviews() {
   if (editReviewDiv) {
     editReviewDiv.style.display = 'none';
   }
+
+  var editNickName = document.getElementById('editNickNames');
+  if(editNickName){
+    editNickName.style.display = 'none';
+  }
   document.getElementById('actionType').value = 'editReviews';
 
+}
+function editNickNames() {
+    var nickNameCells = document.querySelectorAll('td:nth-child(2)');
+
+    nickNameCells.forEach(function(cell) {
+        var nickNameValue = cell.textContent.trim();
+        cell.innerHTML = '<input type="text" class="form-control nickName-edit" value="' + nickNameValue + '">';
+        cell.style.backgroundColor = '#f0f0f0'; // Highlight editable cells
+    });
+
+    var saveButton = document.getElementById('save');
+    if (saveButton.style.display === 'none') {
+        saveButton.style.display = 'block';
+    }
+
+    var editDatesDiv = document.getElementById('editDates');
+    if (editDatesDiv) {
+        editDatesDiv.style.display = 'none';
+    }
+
+    var editReviewDiv = document.getElementById('editReviews');
+    if (editReviewDiv) {
+        editReviewDiv.style.display = 'none';
+    }
+
+    var actionTypeInput = document.getElementById('actionType');
+    if (actionTypeInput) {
+        actionTypeInput.value = 'editNickName';
+    }
+
+    var editNickName = document.getElementById('editNickNames');
+    if (editNickName) {
+        editNickName.style.display = 'none';
+    }
 }
 </script>
 <script>
@@ -194,6 +245,19 @@ function saveReviews() {
       var newDate = input.value;
       changes[originalDate] = newDate;
     });
+  }
+  else if (actionType === 'editNickName') {
+    var businessNameCells = document.querySelectorAll('td:nth-child(1)');
+    var nickNameCells = document.querySelectorAll('.nickName-edit');
+
+    businessNameCells.forEach(function(businessCell, index) {
+      var businessName = businessCell.textContent.trim();
+      var nickName = nickNameCells[index].value.trim();
+      changes[businessName] = nickName;
+      // changes.push([businessName, nickName]);
+    });
+
+    console.log("Changes data being sent:", changes);
   }
 
   // Append changes to the form

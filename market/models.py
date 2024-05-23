@@ -29,6 +29,7 @@ class ScrapeData(db.Model):
     from datetime import date
     id = db.Column(db.Integer(), primary_key=True)
     BusinessName = db.Column(db.String())
+    NickName = db.Column(db.String())
     URL = db.Column(db.String(), nullable = False)
     Date = db.Column(db.Date(), nullable = False, default = date.today())
     ReviewsCount = db.Column(db.Integer(), nullable = False)
