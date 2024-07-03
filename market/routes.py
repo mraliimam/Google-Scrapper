@@ -80,7 +80,8 @@ def home_page():
         changes = json.loads(request.form['changes']) if action_type in ('editDates','editReviews', 'editNickName') else None
         
         if action_type == 'getBusiness':
-            business = request.form['business']        
+            business = request.form['business']     
+            print(business)   
             url = ScrapeData.query.filter_by(BusinessName = business).first().URL
             businessName, reviewsCount = scrapperFunction(url)
             dataExist = ScrapeData.query.filter_by(Date = date.today(), URL = url).first()
