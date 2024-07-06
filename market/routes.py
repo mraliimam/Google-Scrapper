@@ -81,7 +81,8 @@ def home_page():
         
         if action_type == 'getBusiness':
             business = request.form['business']     
-            print(business)   
+            print(business)
+            print(business)
             url = ScrapeData.query.filter_by(BusinessName = business).first().URL
             businessName, reviewsCount = scrapperFunction(url)
             dataExist = ScrapeData.query.filter_by(Date = date.today(), URL = url).first()
