@@ -31,12 +31,12 @@ def roles_required(*roles):
 def signup_page():
     if request.method == 'GET':
         if User.query.filter_by(username = 'admin').first():
+            return 'User already Exists.'
+        else:
             user = User(username = 'admin', password = 'Acord123@', role = 'admin')
             db.session.add(user)
             db.session.commit()
             return 'Pass'
-        else:
-            return 'User already Exists.'
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login_page():
