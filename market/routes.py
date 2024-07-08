@@ -27,7 +27,7 @@ def roles_required(*roles):
         return wrapped
     return wrapper
 
-@app.rute('/signup', methods = ['GET'])
+@app.route('/signup', methods = ['GET'])
 def signup_page():
     if request.method == 'GET':
         if User.query.filter_by(username = 'admin').first():
