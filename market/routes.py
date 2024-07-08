@@ -204,6 +204,7 @@ def form_page():
                 dataExist.ReviewsCount = form.ReviewsCount.data
                 db.session.add(dataExist)
                 db.session.commit()
+                return redirect(url_for('form_page'))
             else:
                 data = ScrapeData(**form_to_dict(form))
                 db.session.add(data)
