@@ -193,26 +193,29 @@ def form_page():
     if request.method == 'POST':        
         
         form.BusinessName.data, form.ReviewsCount.data = scrapperFunction(form.url.data)        
+        print(form.BusinessName.data, form.ReviewsCount.data)
         
         if None in (form.BusinessName.data, form.ReviewsCount.data):
-            flash('Data cannot be scrapped!', category='danger')
-            return redirect(url_for('form_page'))
-        
-        else:
-            dataExist = ScrapeData.query.filter_by(Date = date.today(), URL = form.url.data).first()
-            if dataExist:
-                dataExist.ReviewsCount = form.ReviewsCount.data
-                db.session.add(dataExist)
-                db.session.commit()
-                return redirect(url_for('form_page'))
+            if form.BusinessName.data:
+                form.ReviewsCount.data = 0
             else:
-                data = ScrapeData(**form_to_dict(form))
-                db.session.add(data)
-                try:
-                    db.session.commit()
-                    flash('Data is added Successfuly!!', category='success')
-                    return redirect(url_for('home_page'))
-                except Exception as e:
-                    db.session.rollback()
-                    flash(f'Exception occurs: {e}!!', category='danger')
-                    return redirect(url_for('form_page'))
+                flash('Data cannot be scrapped!', category='danger')
+                return redirect(url_for('form_page'))        
+        
+        dataExist = ScrapeData.query.filter_by(Date = date.today(), URL = form.url.data).first()
+        if dataExist:
+            dataExist.ReviewsCount = form.ReviewsCount.data
+            db.session.add(dataExist)
+            db.session.commit()
+            return redirect(url_for('form_page'))
+        else:
+            data = ScrapeData(**form_to_dict(form))
+            db.session.add(data)
+            try:
+                db.session.commit()
+                flash('Data is added Successfuly!!', category='success')
+                return redirect(url_for('home_page'))
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Exception occurs: {e}!!', category='danger')
+                return redirect(url_for('form_page'))
