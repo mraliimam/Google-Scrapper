@@ -32,7 +32,7 @@ class ScrapeData(db.Model):
     NickName = db.Column(db.String())
     URL = db.Column(db.String(), nullable = False)
     Date = db.Column(db.Date(), nullable = False, default = date.today())
-    ReviewsCount = db.Column(db.Integer(), nullable = False)
+    ReviewsCount = db.Column(db.Integer())
     # Review = db.Column(db.Integer(), nullable = False)
     
 db.create_all()
