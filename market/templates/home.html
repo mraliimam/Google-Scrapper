@@ -38,6 +38,12 @@
         </div>
       </div>
       <br>
+      <!-- <div class="row">
+        <div class="col">
+          <a href="{{ url_for('get_reviews') }}" class="btn btn-success">Get All Reviews</a>
+        </div>
+      </div>
+      <br> -->
       <div class = "table-container">
         <table class = "table table-bordered table-hover table-transparent table-responsive" style="text-align: center; color: black;">
           <thead>
@@ -74,9 +80,9 @@
               <td>
                 <div class="row">
                   <div class="col">
-                    <button type="submit" name = "business" class="btn btn-success" onclick="document.getElementById('actionType').value = 'getBusiness';" value="{{ business[0] }}">Get Reviews</button>
+                    <button type="submit" name = "business" class="btn btn-success" onclick="document.getElementById('actionType').value = 'getBusiness';" value="{{ business[1] }}">Get Reviews</button>
                   </div>
-                  <div class="col"><button type="submit" name = "business" class="btn btn-danger" onclick="document.getElementById('actionType').value = 'delBusiness';" value="{{ business[0] }}">Delete</button></div>
+                  <div class="col"><button type="submit" name = "business" class="btn btn-danger" onclick="document.getElementById('actionType').value = 'delBusiness';" value="{{ business[1] }}">Delete</button></div>
                 </div>
               </td>
               {% for review, date in reviews_dates %}                

@@ -70,49 +70,50 @@ def home_page():
     
     if request.method == 'GET':
         items = ScrapeData.query.all()
-        businesses = set(result.BusinessName for result in items)
+        urlOfBusinesses = set(result.URL for result in items)
         dates = sorted(set(result.Date for result in items))
-        review_count_dict = {business: [''] * len(dates) for business in businesses}
+        review_count_dict = {business: [''] * len(dates) for business in urlOfBusinesses}
 
         for item in items:
-            business = item.BusinessName
+            urls = item.URL
             date_index = dates.index(item.Date)
-            review_count_dict[business][date_index] = item.ReviewsCount
+            review_count_dict[urls][date_index] = item.ReviewsCount
         
         cols = ScrapeData.__table__.columns.keys()
         businesses_reviews_dates = {
-        (business,ScrapeData.query.filter_by(BusinessName = business).first().URL, ScrapeData.query.filter_by(BusinessName = business).first().NickName): zip(review_count_dict[business], dates) for business in businesses
+        (ScrapeData.query.filter_by(URL = url).first().BusinessName,ScrapeData.query.filter_by(URL = url).first().URL, ScrapeData.query.filter_by(URL = url).first().NickName): zip(review_count_dict[url], dates) for url in urlOfBusinesses
         }
         
-        return render_template('home.html', items = items,businesses = businesses, dates = dates, cols = cols, reviewList = review_count_dict, businesses_reviews_dates = businesses_reviews_dates)
+        return render_template('home.html', items = items, dates = dates, cols = cols, reviewList = review_count_dict, businesses_reviews_dates = businesses_reviews_dates)
     if request.method == 'POST':
         # return redirect(url_for('home_page'))
         action_type = request.form['actionType']
         changes = json.loads(request.form['changes']) if action_type in ('editDates','editReviews', 'editNickName') else None
         
         if action_type == 'getBusiness':
-            business = request.form['business']     
-            print(business)
-            print(business)
-            url = ScrapeData.query.filter_by(BusinessName = business).first().URL
-            businessName, reviewsCount = scrapperFunction(url)
-            dataExist = ScrapeData.query.filter_by(Date = date.today(), URL = url).first()
-            if dataExist:
-                dataExist.ReviewsCount = reviewsCount
-                db.session.add(dataExist)
-                db.session.commit()
-            else:            
-                data = ScrapeData(URL = url, BusinessName = businessName, ReviewsCount = reviewsCount)
-                db.session.add(data)
-                try:
+            url = request.form['business']   
+
+            if ScrapeData.query.filter_by(URL = url).first():
+                businessName, reviewsCount = scrapperFunction(url)
+                dataExist = ScrapeData.query.filter_by(Date = date.today(), URL = url).first()
+                if dataExist:
+                    dataExist.ReviewsCount = reviewsCount
+                    db.session.add(dataExist)
                     db.session.commit()
-                except Exception as e:
-                    db.session.rollback()
-                    flash(f'Exception occurs: {e}!!', category='danger')
+                else:            
+                    data = ScrapeData(URL = url, BusinessName = businessName, ReviewsCount = reviewsCount)
+                    db.session.add(data)
+                    try:
+                        db.session.commit()
+                    except Exception as e:
+                        db.session.rollback()
+                        flash(f'Exception occurs: {e}!!', category='danger')
+            else:
+                flash(f'URL NO FOUND!!', category='danger')
             return redirect(url_for('home_page'))
         elif action_type == 'delBusiness':
-            business = request.form['business']        
-            bs = ScrapeData.query.filter_by(BusinessName = business).all()
+            url = request.form['business']        
+            bs = ScrapeData.query.filter_by(URL = url).all()
             for b in bs:
                 db.session.delete(b)
             try:
@@ -193,7 +194,6 @@ def form_page():
     if request.method == 'POST':        
         
         form.BusinessName.data, form.ReviewsCount.data = scrapperFunction(form.url.data)        
-        print(form.BusinessName.data, form.ReviewsCount.data)
         
         if None in (form.BusinessName.data, form.ReviewsCount.data):
             if form.BusinessName.data:
@@ -219,3 +219,37 @@ def form_page():
                 db.session.rollback()
                 flash(f'Exception occurs: {e}!!', category='danger')
                 return redirect(url_for('form_page'))
+            
+@app.route('/getAllReviews')
+def get_reviews():
+
+    from datetime import date
+    items = ScrapeData.query.all()
+    urlOfBusinesses = set(result.URL for result in items)
+
+    for url in urlOfBusinesses:
+        businessName,reviewsCount = scrapperFunction(url)
+
+        if None in (businessName, reviewsCount):
+            if businessName:
+                reviewsCount = 0
+            else:
+                flash('Data cannot be scrapped!', category='danger')
+                db.session.rollback()
+                return redirect(url_for('home_page'))
+        else: 
+            dataExist = ScrapeData.query.filter_by(Date = date.today(), URL = url).first()
+            if dataExist:
+                dataExist.ReviewsCount = reviewsCount
+                db.session.add(dataExist)
+            else:
+                data = ScrapeData(BusinessName = businessName, URL = url,ReviewsCount = reviewsCount, Date = date.today())
+                db.session.add(data)
+    try:
+        db.session.commit()
+        flash('Data is added Successfuly!!', category='success')
+        return redirect(url_for('home_page'))
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Exception occurs: {e}!!', category='danger')
+        return redirect(url_for('home_page'))
