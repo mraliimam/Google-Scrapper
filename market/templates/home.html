@@ -38,12 +38,12 @@
         </div>
       </div>
       <br>
-      <!-- <div class="row">
-        <div class="col">
+      <div class="row">
+        <div class="col" id = 'getReviews'>
           <a href="{{ url_for('get_reviews') }}" class="btn btn-success">Get All Reviews</a>
         </div>
       </div>
-      <br> -->
+      <br>
       <div class = "table-container">
         <table class = "table table-bordered table-hover table-transparent table-responsive" style="text-align: center; color: black;">
           <thead>
@@ -76,7 +76,7 @@
             {% for business, reviews_dates in businesses_reviews_dates.items() %}
             <tr>                            
               <td><a href="{{ business[1] }}" target="_blank">{{ business[0] }}</a></td>
-              <td>{{ business[2] }}</td>
+              <td data-business="{{ business[1] }}">{{ business[2] }}</td>
               <td>
                 <div class="row">
                   <div class="col">
@@ -86,7 +86,7 @@
                 </div>
               </td>
               {% for review, date in reviews_dates %}                
-                <td data-business="{{ business[0] }}" data-date="{{ date }}">{{ review }}</td>
+                <td data-business="{{ business[1] }}" data-date="{{ date }}">{{ review }}</td>
               {% endfor %}              
             </tr>
             {% endfor %}
@@ -143,6 +143,11 @@ function editDates() {
     editNickName.style.display = 'none';
   }
 
+  var getReviews = document.getElementById('getReviews');
+  if(getReviews){
+    getReviews.style.display = 'none';
+  }
+
   // Show all divs with class name delDate
   var delDateDivs = document.querySelectorAll('.delDate');
   delDateDivs.forEach(function(delDateDiv) {
@@ -157,7 +162,7 @@ function editReviews() {
        var reviewValue = cell.textContent.trim();
        var business = cell.getAttribute('data-business');
        var date = cell.getAttribute('data-date');
-       console.log("Business:", business, "Date:", date, "Review:", reviewValue);
+
        cell.innerHTML = '<input type="text" class="form-control review-edit" value="' + reviewValue + '" data-business="' + business + '" data-date="' + date + '">';
        cell.style.backgroundColor = '#f0f0f0';
      });
@@ -189,6 +194,11 @@ function editReviews() {
     editNickName.style.display = 'none';
   }
   document.getElementById('actionType').value = 'editReviews';
+
+  var getReviews = document.getElementById('getReviews');
+  if(getReviews){
+    getReviews.style.display = 'none';
+  }
 
 }
 function editNickNames() {
@@ -224,6 +234,11 @@ function editNickNames() {
     if (editNickName) {
         editNickName.style.display = 'none';
     }
+
+    var getReviews = document.getElementById('getReviews');
+    if(getReviews){
+      getReviews.style.display = 'none';
+    }
 }
 </script>
 <script>
@@ -253,17 +268,13 @@ function saveReviews() {
     });
   }
   else if (actionType === 'editNickName') {
-    var businessNameCells = document.querySelectorAll('td:nth-child(1)');
     var nickNameCells = document.querySelectorAll('.nickName-edit');
 
-    businessNameCells.forEach(function(businessCell, index) {
-      var businessName = businessCell.textContent.trim();
-      var nickName = nickNameCells[index].value.trim();
-      changes[businessName] = nickName;
-      // changes.push([businessName, nickName]);
+    nickNameCells.forEach(function(cell) {
+      var businessUrl = cell.closest('td').getAttribute('data-business');
+      var nickName = cell.value.trim();
+      changes[businessUrl] = nickName;
     });
-
-    console.log("Changes data being sent:", changes);
   }
 
   // Append changes to the form
@@ -272,8 +283,6 @@ function saveReviews() {
   changesInput.name = 'changes';
   changesInput.value = JSON.stringify(changes);
   form.appendChild(changesInput);
-
-  console.log("Changes data being sent:", JSON.stringify(changes));
   // Automatically submit the form
   form.submit();
 }

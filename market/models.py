@@ -26,13 +26,16 @@ class User(db.Model, UserMixin):
     
 
 class ScrapeData(db.Model):
-    from datetime import date
+    from datetime import datetime
+    import pytz
+    new_york_date = datetime.now(pytz.timezone('America/New_York')).date()
+
     id = db.Column(db.Integer(), primary_key=True)
     BusinessName = db.Column(db.String())
     NickName = db.Column(db.String())
-    URL = db.Column(db.String(), nullable = False, unique = True)
-    Date = db.Column(db.Date(), nullable = False, default = date.today())
-    ReviewsCount = db.Column(db.Integer())
+    URL = db.Column(db.String(), nullable = False)
+    Date = db.Column(db.Date(), nullable = False, default = new_york_date)
+    ReviewsCount = db.Column(db.Integer(), default = 0)
     # Review = db.Column(db.Integer(), nullable = False)
     
 db.create_all()

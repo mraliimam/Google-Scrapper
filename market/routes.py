@@ -1,4 +1,5 @@
-from flask import render_template,request, flash, redirect, url_for
+from flask import render_template,request, flash, redirect, url_for, send_file
+import os
 from market import app
 from market.models import *
 from market.forms import *
@@ -61,11 +62,25 @@ def logout_page():
     return redirect(url_for('login_page'))
 
 
+@app.route('/download-db', methods=['GET'])
+@login_required
+def download_db():
+
+    db_path = os.path.join(app.root_path, 'scrapper.db')
+    if os.path.exists(db_path):
+        return send_file(db_path, as_attachment=True)
+    else:
+        flash('Database file not found.', category='danger')
+        return redirect(url_for('home_page'))
+
+
 @app.route('/', methods = ['GET', 'POST'])
 @app.route('/home', methods = ['GET', 'POST'])
 @login_required
 def home_page():
-    from datetime import date
+    from datetime import datetime
+    import pytz
+    new_york_date = datetime.now(pytz.timezone('America/New_York')).date()
     import datetime
     
     if request.method == 'GET':
@@ -95,7 +110,7 @@ def home_page():
 
             if ScrapeData.query.filter_by(URL = url).first():
                 businessName, reviewsCount = scrapperFunction(url)
-                dataExist = ScrapeData.query.filter_by(Date = date.today(), URL = url).first()
+                dataExist = ScrapeData.query.filter_by(Date = new_york_date, URL = url).first()
                 if dataExist:
                     dataExist.ReviewsCount = reviewsCount
                     db.session.add(dataExist)
@@ -121,7 +136,6 @@ def home_page():
                 flash(f'Buusiness Deleted Successfully!', category = 'success')
             except Exception as e:
                 db.session.rollback()
-                print(e)
                 flash(f'Error Occurred while deleting Business', category = 'success')
             return redirect(url_for('home_page'))
         elif action_type == 'delDate':
@@ -131,10 +145,9 @@ def home_page():
                 db.session.delete(bus)
             try:
                 db.session.commit()
-                flash(f'Buusiness Deleted Successfully!', category = 'success')
+                flash(f'Date Deleted Successfully!', category = 'success')
             except Exception as e:
                 db.session.rollback()
-                print(e)
                 flash(f'Error Occurred while deleting Business', category = 'success')
             return redirect(url_for('home_page'))
         elif action_type == 'editDates':
@@ -148,23 +161,23 @@ def home_page():
             db.session.commit()
             return redirect(url_for('home_page'))
         elif action_type == 'editReviews':
-            for business, dates_reviews in changes.items():
+            for url, dates_reviews in changes.items():
                 for dateItem, review in dates_reviews.items():
-                    data_exist = ScrapeData.query.filter_by(Date=dateItem, BusinessName=business).first()
+                    data_exist = ScrapeData.query.filter_by(Date=dateItem, URL=url).first()
                     if data_exist:
                         data_exist.ReviewsCount = review
                         db.session.add(data_exist)
                     elif review != '':
-                        scrapeData = ScrapeData.query.filter_by(BusinessName=business).first()
+                        scrapeData = ScrapeData.query.filter_by(URL=url).first()
                         if scrapeData:
                             dateFormat = dateItem.split('-')
-                            newScrape = ScrapeData(URL = scrapeData.URL, BusinessName = business, Date = datetime.date(int(dateFormat[0]), int(dateFormat[1]), int(dateFormat[2])), ReviewsCount = review)
+                            newScrape = ScrapeData(URL = scrapeData.URL, BusinessName = scrapeData.BusinessName, Date = datetime.date(int(dateFormat[0]), int(dateFormat[1]), int(dateFormat[2])), ReviewsCount = review)
                             db.session.add(newScrape)
             db.session.commit()
             return redirect(url_for('home_page'))
         elif action_type == 'editNickName':
-            for business,nickName in changes.items():
-                for data in ScrapeData.query.filter_by(BusinessName = business):
+            for url,nickName in changes.items():
+                for data in ScrapeData.query.filter_by(URL = url):
                     data.NickName = nickName if nickName else ''
                     db.session.add(data)
             db.session.commit()
@@ -184,7 +197,9 @@ def data_page():
 @login_required
 def form_page():
 
-    from datetime import date
+    from datetime import datetime
+    import pytz
+    new_york_date = datetime.now(pytz.timezone('America/New_York')).date()
 
     form = BusinessForm()
     
@@ -202,7 +217,7 @@ def form_page():
                 flash('Data cannot be scrapped!', category='danger')
                 return redirect(url_for('form_page'))        
         
-        dataExist = ScrapeData.query.filter_by(Date = date.today(), URL = form.url.data).first()
+        dataExist = ScrapeData.query.filter_by(Date = new_york_date, URL = form.url.data).first()
         if dataExist:
             dataExist.ReviewsCount = form.ReviewsCount.data
             db.session.add(dataExist)
@@ -223,13 +238,15 @@ def form_page():
 @app.route('/getAllReviews')
 def get_reviews():
 
-    from datetime import date
+    from datetime import datetime
+    import pytz
+    new_york_date = datetime.now(pytz.timezone('America/New_York')).date()
+
     items = ScrapeData.query.all()
     urlOfBusinesses = set(result.URL for result in items)
 
     for url in urlOfBusinesses:
         businessName,reviewsCount = scrapperFunction(url)
-
         if None in (businessName, reviewsCount):
             if businessName:
                 reviewsCount = 0
@@ -237,14 +254,15 @@ def get_reviews():
                 flash('Data cannot be scrapped!', category='danger')
                 db.session.rollback()
                 return redirect(url_for('home_page'))
-        else: 
-            dataExist = ScrapeData.query.filter_by(Date = date.today(), URL = url).first()
-            if dataExist:
-                dataExist.ReviewsCount = reviewsCount
-                db.session.add(dataExist)
-            else:
-                data = ScrapeData(BusinessName = businessName, URL = url,ReviewsCount = reviewsCount, Date = date.today())
-                db.session.add(data)
+        dataExist = ScrapeData.query.filter_by(Date = new_york_date, URL = url).first()
+        if dataExist:
+            dataExist.ReviewsCount = reviewsCount
+            db.session.add(dataExist)
+            db.session.commit()
+            return redirect(url_for('form_page'))
+        else:
+            data = ScrapeData(BusinessName = businessName, URL = url,ReviewsCount = reviewsCount, Date = new_york_date)
+            db.session.add(data)
     try:
         db.session.commit()
         flash('Data is added Successfuly!!', category='success')
