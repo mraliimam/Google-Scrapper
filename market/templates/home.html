@@ -38,12 +38,12 @@
         </div>
       </div>
       <br>
-      <div class="row">
+      <!-- <div class="row">
         <div class="col" id = 'getReviews'>
           <a href="{{ url_for('get_reviews') }}" class="btn btn-success">Get All Reviews</a>
         </div>
       </div>
-      <br>
+      <br> -->
       <div class = "table-container">
         <table class = "table table-bordered table-hover table-transparent table-responsive" style="text-align: center; color: black;">
           <thead>
@@ -143,10 +143,10 @@ function editDates() {
     editNickName.style.display = 'none';
   }
 
-  var getReviews = document.getElementById('getReviews');
-  if(getReviews){
-    getReviews.style.display = 'none';
-  }
+  // var getReviews = document.getElementById('getReviews');
+  // if(getReviews){
+  //   getReviews.style.display = 'none';
+  // }
 
   // Show all divs with class name delDate
   var delDateDivs = document.querySelectorAll('.delDate');
@@ -195,10 +195,10 @@ function editReviews() {
   }
   document.getElementById('actionType').value = 'editReviews';
 
-  var getReviews = document.getElementById('getReviews');
-  if(getReviews){
-    getReviews.style.display = 'none';
-  }
+  // var getReviews = document.getElementById('getReviews');
+  // if(getReviews){
+  //   getReviews.style.display = 'none';
+  // }
 
 }
 function editNickNames() {
@@ -235,10 +235,10 @@ function editNickNames() {
         editNickName.style.display = 'none';
     }
 
-    var getReviews = document.getElementById('getReviews');
-    if(getReviews){
-      getReviews.style.display = 'none';
-    }
+    // var getReviews = document.getElementById('getReviews');
+    // if(getReviews){
+    //   getReviews.style.display = 'none';
+    // }
 }
 </script>
 <script>

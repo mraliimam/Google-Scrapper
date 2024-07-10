@@ -251,9 +251,10 @@ def get_reviews():
             if businessName:
                 reviewsCount = 0
             else:
-                flash('Data cannot be scrapped!', category='danger')
-                db.session.rollback()
-                return redirect(url_for('home_page'))
+                # flash('Data cannot be scrapped!', category='danger')
+                # db.session.rollback()
+                # return redirect(url_for('home_page'))
+                continue
         dataExist = ScrapeData.query.filter_by(Date = new_york_date, URL = url).first()
         if dataExist:
             dataExist.ReviewsCount = reviewsCount
