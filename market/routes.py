@@ -84,6 +84,7 @@ def home_page():
     import datetime
     
     if request.method == 'GET':
+        print(new_york_date)
         items = ScrapeData.query.all()
         urlOfBusinesses = set(result.URL for result in items)
         dates = sorted(set(result.Date for result in items))
@@ -200,6 +201,7 @@ def form_page():
     from datetime import datetime
     import pytz
     new_york_date = datetime.now(pytz.timezone('America/New_York')).date()
+    print(new_york_date)
 
     form = BusinessForm()
     
